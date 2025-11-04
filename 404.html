@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,14 +15,12 @@
   </head>
   <body>
     <header class="appbar">
-      <div class="brand" id="brandHotspot" title="Admin menu (hidden)">📝 Exam Writer</div>
+      <div class="brand">📝 Exam Writer</div>
       <nav class="toolbar" role="toolbar" aria-label="Document actions">
         <button id="newBtn" title="New (Ctrl+N)">New</button>
-        <button id="openBtn" title="Open (Ctrl+O)">Open…</button>
         <button id="saveAsBtn" title="Save As (Ctrl+Shift+S)">Save As…</button>
         <button id="printBtn" title="Print (Ctrl+P)">Print</button>
         <button id="fullscreenBtn" title="Toggle Full Screen (F11)">Full Screen</button>
-        <button id="themeBtn" title="Toggle theme">Theme</button>
         <span class="spacer" aria-hidden="true"></span>
         <div class="status">
           <span id="autosaveStatus" aria-live="polite">Autosave: off</span>
@@ -55,9 +53,10 @@
       </div>
 
       <section class="editor-shell">
-        <textarea id="editor" placeholder="Save your exam file to begin…" aria-label="Exam text editor"
-          disabled spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off"></textarea>
+        <!-- On-screen editor -->
+        <textarea id="editor" placeholder="Save your exam file to begin…" aria-label="Exam text editor" disabled></textarea>
 
+        <!-- Print-only views (filled by JS on print) -->
         <div id="printHeader" aria-hidden="true">
           <div><strong>Center Number:</strong> <span id="pCenter"></span></div>
           <div><strong>Candidate ID:</strong> <span id="pId"></span></div>
@@ -69,7 +68,7 @@
       </section>
     </main>
 
-    <!-- First-save modal -->
+    <!-- First-save gate modal -->
     <dialog id="firstSaveDialog" class="modal" aria-labelledby="firstSaveTitle">
       <h2 id="firstSaveTitle">Save your exam file to begin</h2>
       <p>Choose where to save your exam file. Autosave runs every minute.</p>
@@ -81,26 +80,6 @@
       <menu>
         <button id="firstSaveConfirm" class="primary">Choose location…</button>
       </menu>
-    </dialog>
-
-    <!-- Admin modal -->
-    <dialog id="adminDialog" class="modal" aria-labelledby="adminTitle">
-      <h2 id="adminTitle">Administrator</h2>
-      <p>Enter admin PIN to access controls.</p>
-      <label>PIN
-        <input id="adminPin" type="password" inputmode="numeric" pattern="[0-9]*" />
-      </label>
-      <menu>
-        <button id="adminCancel">Cancel</button>
-        <button id="adminUnlock" class="primary">Unlock</button>
-      </menu>
-      <div id="adminPanel" hidden>
-        <menu>
-          <button id="forceSaveBtn">Force save now</button>
-          <button id="exitAppBtn">Exit app / end session</button>
-        </menu>
-        <small>Shortcut: Ctrl + Shift + E / Ctrl + Alt + K or tap logo 5×</small>
-      </div>
     </dialog>
 
     <noscript><p style="padding:1rem;">This app requires JavaScript.</p></noscript>
