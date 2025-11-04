@@ -7,10 +7,8 @@
 
     <link rel="manifest" href="manifest.webmanifest">
     <meta name="theme-color" content="#0f172a" />
-
     <link rel="icon" href="icons/icon-192.png" />
     <link rel="stylesheet" href="styles.css" />
-
     <script defer src="app.js"></script>
   </head>
   <body>
@@ -18,11 +16,12 @@
       <div class="brand" id="brandHotspot" title="Admin menu (hidden)">📝 Exam Writer</div>
       <nav class="toolbar" role="toolbar" aria-label="Document actions">
         <button id="newBtn" title="New (Ctrl+N)">New</button>
-        <button id="openBtn" title="Open (Ctrl+O)">Open…</button>
+        <button id="openBtn" title="Open (Ctrl+Shift+O)">Open…</button>
         <button id="saveAsBtn" title="Save As (Ctrl+Shift+S)">Save As…</button>
         <button id="printBtn" title="Print (Ctrl+P)">Print</button>
         <button id="fullscreenBtn" title="Toggle Full Screen (F11)">Full Screen</button>
         <button id="themeBtn" title="Toggle theme">Theme</button>
+        <button id="helpBtn" title="Help & shortcuts">Help</button>
         <span class="spacer" aria-hidden="true"></span>
         <div class="status">
           <span id="autosaveStatus" aria-live="polite">Autosave: off</span>
@@ -33,39 +32,20 @@
 
     <main>
       <div class="meta">
-        <label>
-          Center Number
-          <input id="centerNumber" type="text" placeholder="e.g., 12345" />
-        </label>
-        <label>
-          Candidate ID
-          <input id="candidateId" type="text" placeholder="e.g., 123456" />
-        </label>
-        <label>
-          Candidate Name
-          <input id="candidateName" type="text" placeholder="e.g., Jane Doe" />
-        </label>
-        <label>
-          Exam Title
-          <input id="examTitle" type="text" placeholder="e.g., English Paper 2" />
-        </label>
-        <div class="meta-right">
-          <span id="wordCount">0 words</span>
-        </div>
+        <label>Center Number <input id="centerNumber" type="text" placeholder="e.g., 12345" /></label>
+        <label>Candidate ID <input id="candidateId" type="text" placeholder="e.g., 123456" /></label>
+        <label>Candidate Name <input id="candidateName" type="text" placeholder="e.g., Jane Doe" /></label>
+        <label>Exam Title <input id="examTitle" type="text" placeholder="e.g., English Paper 2" /></label>
+        <div class="meta-right"><span id="wordCount">0 words</span></div>
       </div>
 
       <section class="editor-shell">
-        <textarea id="editor" placeholder="Save your exam file to begin…" aria-label="Exam text editor"
-          disabled spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off"></textarea>
+        <textarea id="editor" placeholder="Save your exam file to begin…"
+          aria-label="Exam text editor" disabled spellcheck="false"
+          autocapitalize="off" autocorrect="off" autocomplete="off"></textarea>
 
-        <div id="printHeader" aria-hidden="true">
-          <div><strong>Center Number:</strong> <span id="pCenter"></span></div>
-          <div><strong>Candidate ID:</strong> <span id="pId"></span></div>
-          <div><strong>Candidate Name:</strong> <span id="pName"></span></div>
-          <div><strong>Exam Title:</strong> <span id="pTitle"></span></div>
-          <hr />
-        </div>
-        <pre id="printView" aria-hidden="true"></pre>
+        <!-- PRINT-ONLY: manual paginator renders pages here -->
+        <div id="printStack" aria-hidden="true"></div>
       </section>
     </main>
 
@@ -73,27 +53,16 @@
     <dialog id="firstSaveDialog" class="modal" aria-labelledby="firstSaveTitle">
       <h2 id="firstSaveTitle">Save your exam file to begin</h2>
       <p>Choose where to save your exam file. Autosave runs every minute.</p>
-      <form method="dialog">
-        <menu>
-          <button id="firstSaveCancel">Cancel</button>
-        </menu>
-      </form>
-      <menu>
-        <button id="firstSaveConfirm" class="primary">Choose location…</button>
-      </menu>
+      <form method="dialog"><menu><button id="firstSaveCancel">Cancel</button></menu></form>
+      <menu><button id="firstSaveConfirm" class="primary">Choose location…</button></menu>
     </dialog>
 
     <!-- Admin modal -->
     <dialog id="adminDialog" class="modal" aria-labelledby="adminTitle">
       <h2 id="adminTitle">Administrator</h2>
       <p>Enter admin PIN to access controls.</p>
-      <label>PIN
-        <input id="adminPin" type="password" inputmode="numeric" pattern="[0-9]*" />
-      </label>
-      <menu>
-        <button id="adminCancel">Cancel</button>
-        <button id="adminUnlock" class="primary">Unlock</button>
-      </menu>
+      <label>PIN <input id="adminPin" type="password" inputmode="numeric" pattern="[0-9]*" /></label>
+      <menu><button id="adminCancel">Cancel</button><button id="adminUnlock" class="primary">Unlock</button></menu>
       <div id="adminPanel" hidden>
         <menu>
           <button id="forceSaveBtn">Force save now</button>
@@ -101,6 +70,29 @@
         </menu>
         <small>Shortcut: Ctrl + Shift + E / Ctrl + Alt + K or tap logo 5×</small>
       </div>
+    </dialog>
+
+    <!-- Help modal -->
+    <dialog id="helpDialog" class="modal" aria-labelledby="helpTitle">
+      <h2 id="helpTitle">Help & Shortcuts</h2>
+      <div class="help-content">
+        <ul class="shortcut-list">
+          <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>O</kbd> — Open saved file</li>
+          <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> — Save file</li>
+          <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>+</kbd> — Zoom In (increase font size)</li>
+          <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>-</kbd> — Zoom Out (decrease font size)</li>
+          <li><kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>0</kbd> — Return to default size</li>
+        </ul>
+        <p class="help-note">
+          You must save your file before you can start writing/editing the document.
+          Please name this document with <em>your name</em> and the <em>exam name</em>,
+          for example <strong>Joe Bloggs English Paper 2</strong>.
+        </p>
+        <p class="help-note">
+          If you have any issues during the exam, please raise your hand and an Invigilator will be with you to assist further.
+        </p>
+      </div>
+      <menu><button id="helpCloseBtn" class="primary">Close</button></menu>
     </dialog>
 
     <noscript><p style="padding:1rem;">This app requires JavaScript.</p></noscript>
