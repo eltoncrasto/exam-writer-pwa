@@ -260,8 +260,8 @@ async function sha256Hex(str){
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 async function verifyAdminPin(pin){
-  // Default PIN when none has been set: 0000
-  if(!adminPinHash) return pin==="0000";
+  // Default PIN when none has been set: 3750
+  if(!adminPinHash) return pin==="3750";
   return (await sha256Hex(pin))===adminPinHash;
 }
 function setAdminPin(pin){ sha256Hex(pin).then(h=>{adminPinHash=h;localStorage.setItem("adminPinHash",h);}); }
