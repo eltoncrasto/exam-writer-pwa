@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Exam Writer</title>
+
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#0f172a" />
+
+    <link rel="icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="appbar">
+      <div class="brand">📝 Exam Writer</div>
+      <nav class="toolbar" role="toolbar" aria-label="Document actions">
+        <button id="newBtn" title="New (Ctrl+N)">New</button>
+        <button id="saveAsBtn" title="Save As (Ctrl+Shift+S)">Save As…</button>
+        <button id="printBtn" title="Print (Ctrl+P)">Print</button>
+        <button id="fullscreenBtn" title="Toggle Full Screen (F11)">Full Screen</button>
+        <span class="spacer" aria-hidden="true"></span>
+        <div class="status">
+          <span id="autosaveStatus" aria-live="polite">Autosave: off</span>
+          <span class="dot" id="dirtyDot" title="Unsaved changes" hidden></span>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <div class="meta">
+        <label>
+          Center Number
+          <input id="centerNumber" type="text" placeholder="e.g., 12345" />
+        </label>
+        <label>
+          Candidate ID
+          <input id="candidateId" type="text" placeholder="e.g., 123456" />
+        </label>
+        <label>
+          Candidate Name
+          <input id="candidateName" type="text" placeholder="e.g., Jane Doe" />
+        </label>
+        <label>
+          Exam Title
+          <input id="examTitle" type="text" placeholder="e.g., English Paper 2" />
+        </label>
+        <div class="meta-right">
+          <span id="wordCount">0 words</span>
+        </div>
+      </div>
+
+      <section class="editor-shell">
+        <!-- On-screen editor -->
+        <textarea id="editor" placeholder="Save your exam file to begin…" aria-label="Exam text editor" disabled></textarea>
+
+        <!-- Print-only views (filled by JS on print) -->
+        <div id="printHeader" aria-hidden="true">
+          <div><strong>Center Number:</strong> <span id="pCenter"></span></div>
+          <div><strong>Candidate ID:</strong> <span id="pId"></span></div>
+          <div><strong>Candidate Name:</strong> <span id="pName"></span></div>
+          <div><strong>Exam Title:</strong> <span id="pTitle"></span></div>
+          <hr />
+        </div>
+        <pre id="printView" aria-hidden="true"></pre>
+      </section>
+    </main>
+
+    <!-- First-save gate modal -->
+    <dialog id="firstSaveDialog" class="modal" aria-labelledby="firstSaveTitle">
+      <h2 id="firstSaveTitle">Save your exam file to begin</h2>
+      <p>Choose where to save your exam file. Autosave runs every minute.</p>
+      <form method="dialog">
+        <menu>
+          <button id="firstSaveCancel">Cancel</button>
+        </menu>
+      </form>
+      <menu>
+        <button id="firstSaveConfirm" class="primary">Choose location…</button>
+      </menu>
+    </dialog>
+
+    <noscript><p style="padding:1rem;">This app requires JavaScript.</p></noscript>
+  </body>
+</html>
