@@ -1,5 +1,6 @@
 // Exam Writer – admin PIN, open/save, autosave, paste-block, theme,
-// Manual pagination with header date + page number, Help dialog, and zoom shortcuts.
+// Manual pagination with header date + page number, Help dialog, zoom,
+// status dot colors, and fixed Admin/Force Save.
 
 let fileHandle = null;
 let autosaveTimer = null;
@@ -16,18 +17,16 @@ async function registerSW() {
 }
 
 /* ---------- UI helpers ---------- */
-function setDirty(v){ dirty=v; $("#dirtyDot").hidden=!v; }
 function setDirty(v) {
   dirty = v;
   const dot = $("#dirtyDot");
   dot.hidden = false;
-
-  // State color updates
-  if (v) {
-    dot.className = "dot dirty"; // unsaved (red)
-  } else {
-    dot.className = "dot saved"; // saved (green)
-  }
+  dot.className = v ? "dot dirty" : "dot saved";
+}
+function updateWordCount(){
+  const t=$("#editor").value.trim();
+  const w=t ? (t.match(/\b\w+\b/g)?.length ?? 0) : 0;
+  $("#wordCount").textContent=`${w} word${w===1?'':'s'}`;
 }
 async function ensurePersistence(){ if(navigator.storage?.persist){ try{ await navigator.storage.persist(); }catch{} }}
 
@@ -37,8 +36,8 @@ function initTheme(){ applyTheme(localStorage.getItem("theme") || "dark"); }
 function toggleTheme(){ applyTheme((localStorage.getItem("theme")||"dark")==="dark"?"light":"dark"); }
 
 /* ---------- Zoom (editor only) ---------- */
-const BASE_EDITOR_REM = 1.05; // keep in sync with CSS default
-function applyZoom(level){ // level is a multiplier, e.g., 1.0, 1.1, 0.9
+const BASE_EDITOR_REM = 1.05;
+function applyZoom(level){
   const clamped = Math.min(2.0, Math.max(0.6, level));
   document.documentElement.style.setProperty("--editor-size", `${BASE_EDITOR_REM * clamped}rem`);
   localStorage.setItem("editorZoom", String(clamped));
@@ -124,7 +123,10 @@ async function firstSaveFlow(){
   }catch(e){console.warn("firstSaveFlow failed",e);}
 }
 async function afterSuccessfulSavePick(){
-  await hideFirstSaveGate(); $("#editor").disabled=false; $("#editor").focus(); if(!autosaveTimer) startAutosave();
+  await hideFirstSaveGate();
+  $("#editor").disabled=false;
+  $("#editor").focus();
+  if(!autosaveTimer) startAutosave();
 }
 
 /* ---------- Autosave ---------- */
@@ -179,15 +181,14 @@ function buildFooterOnlyPages() {
   const PAGE_H_MM   = 297;
   const TOP_MM      = 16;
   const BOTTOM_MM   = 18;
-  const HEADER_MM   = 22;  // visual header height incl. hr
-  const FUDGE_MM    = 5;   // matches CSS --print-fudge
-  const BODY_PAD_MM = 2;   // safety
+  const HEADER_MM   = 22;
+  const FUDGE_MM    = 5;
+  const BODY_PAD_MM = 2;
   const PAGE_CONTENT_MM = PAGE_H_MM - TOP_MM - BOTTOM_MM - FUDGE_MM;
   const BODY_MAX_MM     = PAGE_CONTENT_MM - HEADER_MM - BODY_PAD_MM;
   measure.style.maxHeight = `${BODY_MAX_MM}mm`;
-  // ------------------------------------
 
-  // Greedy pagination by binary search per page
+  // Greedy pagination
   let start = 0;
   const pages = [];
   while (start < lines.length) {
@@ -208,7 +209,7 @@ function buildFooterOnlyPages() {
   const total = Math.max(1, pages.length);
   const fmtDate = new Date().toLocaleDateString('en-GB');
 
-  // Render each page block with header meta (date left, page right)
+  // Render
   pages.forEach(([s,e], i) => {
     const page = document.createElement('div');
     page.className = 'p-page';
@@ -240,11 +241,7 @@ function buildFooterOnlyPages() {
 
   document.body.removeChild(measure);
 }
-
-function printDoc(){
-  buildFooterOnlyPages();
-  window.print();
-}
+function printDoc(){ buildFooterOnlyPages(); window.print(); }
 
 /* ---------- Fullscreen ---------- */
 function toggleFullscreen(){ if(!document.fullscreenElement) document.documentElement.requestFullscreen({navigationUI:"hide"}).catch(()=>{}); else document.exitFullscreen().catch(()=>{}); }
@@ -263,12 +260,24 @@ async function sha256Hex(str){
   return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
 }
 async function verifyAdminPin(pin){
-  if(!adminPinHash) return pin==="0000"; // default 0000
+  // Default PIN when none has been set: 0000
+  if(!adminPinHash) return pin==="0000";
   return (await sha256Hex(pin))===adminPinHash;
 }
 function setAdminPin(pin){ sha256Hex(pin).then(h=>{adminPinHash=h;localStorage.setItem("adminPinHash",h);}); }
 
 function openAdminDialog(){ $("#adminDialog").showModal(); $("#adminPanel").hidden=true; $("#adminPin").value=""; }
+
+// Force save now (works even if no file chosen yet)
+async function forceSave(){
+  if (fileHandle) {
+    await writeToFile(buildDocumentText());
+  } else {
+    // No handle yet — prompt for a save location, then write
+    await saveAs();
+  }
+}
+
 function initAdminTriggers(){
   let taps=0,timer;
   $("#brandHotspot").addEventListener("click",()=>{
@@ -285,10 +294,7 @@ function initAdminTriggers(){
     if(!ok){alert("Incorrect PIN");return;}
     $("#adminPanel").hidden=false;
   });
-  $("#forceSaveBtn").addEventListener("click",async()=>{
-    if(fileHandle) await writeToFile(buildDocumentText());
-    else await writeOPFSBackup(buildDocumentText());
-  });
+  $("#forceSaveBtn").addEventListener("click", async()=>{ await forceSave(); });
   $("#exitAppBtn").addEventListener("click",()=>{ try{window.close();}catch{} });
 }
 
@@ -302,20 +308,13 @@ function initHelp(){
 /* ---------- Shortcuts ---------- */
 function bindShortcuts(){
   document.addEventListener("keydown",(e)=>{
-    // New
     if(e.ctrlKey && e.key.toLowerCase()==="n"){e.preventDefault();newDoc();}
-    // Open (Ctrl+Shift+O)
     if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==="o"){e.preventDefault();openExisting();}
-    // Save (Ctrl+Shift+S)
     if(e.ctrlKey && e.shiftKey && e.key.toLowerCase()==="s"){e.preventDefault();saveAs();}
-    // Print (Ctrl+P) – keep default behavior
     if(e.ctrlKey && e.key.toLowerCase()==="p"){ /* allow default */ }
 
-    // Zoom In: Ctrl+Shift+'+'  (also treat '=' when Shift is held)
     if(e.ctrlKey && e.shiftKey && (e.key==='+' || e.key==='=')){ e.preventDefault(); zoomIn(); }
-    // Zoom Out: Ctrl+Shift+'-'
     if(e.ctrlKey && e.shiftKey && e.key==='-'){ e.preventDefault(); zoomOut(); }
-    // Zoom Reset: Ctrl+Shift+'0'
     if(e.ctrlKey && e.shiftKey && e.key==='0'){ e.preventDefault(); zoomReset(); }
   });
 }
