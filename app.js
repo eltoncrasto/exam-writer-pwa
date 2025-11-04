@@ -8,9 +8,16 @@ const $ = (s) => document.querySelector(s);
 
 async function registerSW() {
   if ('serviceWorker' in navigator) {
-    try { await navigator.serviceWorker.register('/service-worker.js'); } catch {}
+    try {
+      await navigator.serviceWorker.register('./service-worker.js', { scope: './' });
+      console.log('✅ Service Worker registered from deployed root');
+    } catch (err) {
+      console.error('❌ Service Worker registration failed:', err);
+    }
   }
 }
+
+window.addEventListener('load', registerSW);
 
 function setDirty(v) {
   dirty = v;

@@ -1,14 +1,14 @@
 {
-"name": "Exam Writer",
-"short_name": "ExamWriter",
-"description": "Full-screen, offline-ready exam writing app with minute-by-minute autosave.",
-"start_url": "/index.html",
-"scope": "/",
-"display": "fullscreen",
-"background_color": "#0b1020",
-"theme_color": "#0f172a",
-"icons": [
-{ "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-{ "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-]
+  "name": "Exam Writer",
+  "short_name": "ExamWriter",
+  "start_url": "/exam-writer-pwa/",
+  "scope": "/exam-writer-pwa/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0b84f3",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
 }
