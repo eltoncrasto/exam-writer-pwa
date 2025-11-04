@@ -1,6 +1,6 @@
 // ---- PWA service worker tuned for GitHub Pages + kiosk ----
 // Cache version. Bump on deploys when not using hashed assets.
-const VERSION = 'v6';
+const VERSION = 'v6.1';
 const CACHE_PREFIX = 'exam-writer';
 const PRECACHE = `${CACHE_PREFIX}-precache-${VERSION}`;
 const RUNTIME = `${CACHE_PREFIX}-runtime-${VERSION}`;
